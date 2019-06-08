@@ -6,21 +6,23 @@ class Ant(Tk):
 	def __init__(self):
 		Tk.__init__(self)
 		self.title('ant')
-		self.my_width = 800
-		self.my_height = 800
-		self.ylen = 5
-		self.xlen = 5
-		self.d = 5
+		self.my_width = 500
+		self.my_height = 500
+		self.ylen = 4
+		self.xlen = 4
+		self.d = 4
 		self.c = Canvas(self, width=self.my_width,\
 		height=self.my_height)
 		self.c.pack()
-		self.x = self.my_width/2
-		self.y = self.my_height/2
-		self.facing = 'north'
-		# 0 = white, 1 = green
+		self.x = 300
+		self.y = 300
+		self.facing = 'west'
+		# 0 = white, 1 = green. Init tiles array to all white.
 		self.tiles = [0]*self.my_width*self.my_height
 		
 	def get_colormove(self):
+		''' Called first. Calc index of tile array based on y (row) and
+		x (column). '''
 		yndx = self.y*self.my_height
 		ndx = int(yndx + self.x)
 		if self.tiles[ndx] == 0:
@@ -29,8 +31,17 @@ class Ant(Tk):
 		else:
 			self.next_color = 'white'
 			self.move = 'left'
-		
+	
+	def draw(self):
+		''' Called second. Color pixel at our position. '''
+		self.c.create_rectangle(self.x,\
+		self.y+self.ylen,\
+		self.x+self.xlen,\
+		self.y,\
+		fill=self.next_color,outline="")	
+	
 	def store_color(self):
+		''' Called third. Writes current tile color to tiles list. '''
 		yndx = self.y*self.my_height
 		ndx = int(yndx + self.x)
 		if self.next_color.startswith('green'):
@@ -39,32 +50,31 @@ class Ant(Tk):
 			self.tiles[ndx] = 0
 		
 	def set_deltas(self):
+		''' Called forth. Incr/decrements x or y, sets ant's position. ''' 
 		# white = right, green = left
-		if self.facing == 'north':
-			if self.move == 'right':
+		if self.facing.startswith('north'):
+			if self.move.startswith('right'):
 				self.facing = 'east'
 				self.x += self.d
-				# no change to y
 			else:
 				self.facing = 'west'
 				self.x -= self.d
-				# no change to y
-		elif self.facing == 'east':
-			if self.move == 'right':
+		elif self.facing.startswith('east'):
+			if self.move.startswith('right'):
 				self.facing = 'south'
 				self.y += self.d
 			else:
 				self.facing = 'north'
 				self.y -= self.d
-		elif self.facing == 'south':
-			if self.move == 'right':
+		elif self.facing.startswith('south'):
+			if self.move.startswith('right'):
 				self.facing = 'west'
 				self.x -= self.d
 			else:
 				self.facing = 'east'
 				self.x += self.d
-		elif self.facing == 'west':
-			if self.move == 'right':
+		elif self.facing.startswith('west'):
+			if self.move.startswith('right'):
 				self.facing = 'north'
 				self.y -= self.d
 			else:
@@ -72,20 +82,15 @@ class Ant(Tk):
 				self.y += self.d
 			
 	def next_frame(self):
-		# get color of our position (and next move)
+		# 1. Get color of our position (and next move).
 		self.get_colormove()
-		# color pixel at our position
-		self.c.create_rectangle(self.x,\
-		self.y+self.ylen,\
-		self.x+self.xlen,\
-		self.y,\
-		fill=self.next_color,outline="")
-		#print('x=%i, y=%i, %s, %s' % (self.x,self.y,self.next_color,self.facing))
+		# 2. Color box.
+		self.draw()
+		# 3. Store this color to the tiles list.
 		self.store_color()		
-		# set next x,y coords
+		# 4. Calc next x,y coords.
 		self.set_deltas()
-		#print('\t\t\t%s' % self.facing)
-		self.c.after(25, self.next_frame)
+		self.c.after(1, self.next_frame)
 
 if __name__ == "__main__":
 	app = Ant()
